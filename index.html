@@ -1,0 +1,1260 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>План / Факт</title>
+<style>
+:root{
+  --bg:#f5f7fb; --panel:#fff; --text:#141922; --muted:#6f7784; --line:#dfe4eb;
+  --blue:#1769d2; --blue2:#0e4fa7; --blueSoft:#eef5ff; --green:#187a3f; --greenSoft:#eaf7ef;
+  --yellow:#a76600; --yellowSoft:#fff6df; --red:#b42318; --redSoft:#fff0ef; --graySoft:#f2f4f7;
+  --radius:14px; --shadow:0 1px 2px rgba(16,24,40,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{
+  margin:0; font-family:Arial,Helvetica,sans-serif; color:var(--text); background:var(--bg);
+  min-height:100vh; -webkit-text-size-adjust:100%;
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.app{max-width:880px;margin:0 auto;padding:16px 16px 92px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.brand{font-size:25px;font-weight:800;letter-spacing:-.3px}
+.date-label{font-size:13px;color:var(--muted);margin-top:3px}
+.icon-btn,.btn,.choice,.nav-btn{
+  min-height:46px;border:0;border-radius:12px;font-weight:700;transition:.12s ease;
+}
+.btn{padding:11px 15px}
+.btn.primary{background:var(--blue);color:#fff}
+.btn.primary:active{background:var(--blue2)}
+.btn.secondary{background:var(--blueSoft);color:var(--blue)}
+.btn.light{background:#fff;border:1px solid var(--line);color:var(--text)}
+.btn.good{background:var(--greenSoft);color:var(--green)}
+.btn.warn{background:var(--yellowSoft);color:var(--yellow)}
+.btn.bad{background:var(--redSoft);color:var(--red)}
+.btn.ghost{background:transparent;color:var(--muted)}
+.btn.full{width:100%}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.actions .btn{flex:0 0 auto}
+.card{
+  background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:16px; margin-bottom:12px;
+}
+.card.flat{box-shadow:none}
+h1,h2,h3,p{margin-top:0}
+h2{font-size:19px;margin-bottom:12px}
+h3{font-size:16px;margin-bottom:10px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.hero{
+  background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:12px;
+}
+.hero-title{font-size:22px;font-weight:800;margin-bottom:6px}
+.hero-text{font-size:14px;color:var(--muted);line-height:1.45;margin-bottom:16px}
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.home-action{
+  min-height:105px;text-align:left;padding:15px;border:1px solid var(--line);background:#fff;border-radius:14px;
+}
+.home-action strong{display:block;font-size:16px;margin-bottom:6px}
+.home-action span{display:block;color:var(--muted);font-size:13px;line-height:1.35}
+.home-action.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.home-action.primary span{color:#e7f0ff}
+label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+input[type=text],input[type=date],textarea,select{
+  width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--text);
+  padding:11px 12px;outline:none;min-height:44px;
+}
+textarea{min-height:120px;resize:vertical;line-height:1.45}
+input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(23,105,210,.10)}
+.field{margin-bottom:12px}
+.screen{display:none}
+.screen.active{display:block}
+.progress-wrap{margin:8px 0 18px}
+.progress-top{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted);margin-bottom:7px}
+.progress{height:8px;background:#e8edf3;border-radius:99px;overflow:hidden}
+.progress>div{height:100%;background:var(--blue);width:0}
+.task-question{
+  font-size:22px;font-weight:800;line-height:1.3;padding:18px 0 6px;word-break:break-word
+}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
+.choice{padding:12px;border:1px solid var(--line);background:#fff;text-align:center}
+.choice.good{background:var(--greenSoft);color:var(--green);border-color:#cce9d7}
+.choice.warn{background:var(--yellowSoft);color:var(--yellow);border-color:#f0ddb2}
+.choice.bad{background:var(--redSoft);color:var(--red);border-color:#f2c9c6}
+.choice.gray{background:var(--graySoft);color:#4c5563}
+.followup{margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.inline-input{display:flex;gap:8px}
+.inline-input input{flex:1}
+.detect-list,.edit-list,.fact-list,.plan-list,.history-list{display:flex;flex-direction:column;gap:8px}
+.detect-row,.edit-row,.fact-row,.plan-row,.history-row{
+  border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px
+}
+.detect-row{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:center}
+.edit-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.fact-row{display:grid;grid-template-columns:120px 1fr auto;gap:8px;align-items:center}
+.plan-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.row-actions{display:flex;gap:5px}
+.mini{
+  min-width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;font-weight:700
+}
+.mini.danger{color:var(--red)}
+.badge{
+  display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700
+}
+.badge.good{background:var(--greenSoft);color:var(--green)}
+.badge.warn{background:var(--yellowSoft);color:var(--yellow)}
+.badge.bad{background:var(--redSoft);color:var(--red)}
+.preview{
+  white-space:pre-wrap;background:#f8fafc;border:1px solid var(--line);border-radius:12px;
+  padding:14px;line-height:1.5;min-height:220px;overflow-wrap:anywhere
+}
+.quick-phrases{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.quick-phrases button{
+  border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 10px;font-size:13px
+}
+.nav{
+  position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.97);border-top:1px solid var(--line);
+  padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
+  display:flex;gap:4px;justify-content:center;z-index:50
+}
+.nav-inner{max-width:880px;width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.nav-btn{background:transparent;color:var(--muted);font-size:12px;padding:7px 4px}
+.nav-btn span{display:block;font-size:20px;line-height:1;margin-bottom:4px}
+.nav-btn.active{background:var(--blueSoft);color:var(--blue)}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.section-head h2{margin:0}
+.kpi{display:flex;gap:8px;flex-wrap:wrap}
+.kpi .badge{font-size:13px}
+.history-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.history-date{font-weight:800}
+.history-meta{font-size:13px;color:var(--muted);margin-top:4px}
+.warning{background:var(--yellowSoft);color:#704b00;border:1px solid #ecd7a3;border-radius:12px;padding:12px;margin-bottom:12px}
+.error{background:var(--redSoft);color:var(--red);border:1px solid #f0c1bd;border-radius:12px;padding:12px;margin-bottom:12px}
+.success{background:var(--greenSoft);color:var(--green);border:1px solid #c8e5d3;border-radius:12px;padding:12px;margin-bottom:12px}
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(15,23,42,.42);display:none;align-items:flex-end;justify-content:center;z-index:100;padding:12px
+}
+.modal-backdrop.show{display:flex}
+.modal{
+  width:min(620px,100%);background:#fff;border-radius:18px;padding:16px;max-height:88vh;overflow:auto
+}
+.modal h3{font-size:18px}
+.toast{
+  position:fixed;left:50%;bottom:88px;transform:translate(-50%,15px);background:#111827;color:#fff;
+  padding:11px 14px;border-radius:10px;opacity:0;pointer-events:none;transition:.18s;z-index:200;
+  max-width:calc(100vw - 28px);text-align:center
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.hidden{display:none!important}
+.spacer8{height:8px}
+.spacer12{height:12px}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.file-input{display:none}
+@media(max-width:620px){
+  .app{padding:12px 12px 92px}
+  .brand{font-size:22px}
+  .home-grid{grid-template-columns:1fr}
+  .home-action{min-height:88px}
+  .choice-grid{grid-template-columns:1fr}
+  .fact-row{grid-template-columns:1fr}
+  .fact-row .row-actions{justify-content:flex-end}
+  .task-question{font-size:20px}
+  .actions{display:grid;grid-template-columns:1fr}
+  .actions .btn{width:100%}
+  .inline-input{display:grid;grid-template-columns:1fr}
+}
+@media(max-width:360px){
+  .app{padding-left:9px;padding-right:9px}
+  .card,.hero{padding:13px}
+  .nav-btn{font-size:11px}
+  .nav-btn span{font-size:18px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div>
+      <div class="brand">План / Факт</div>
+      <div class="date-label" id="todayLabel"></div>
+    </div>
+    <button class="btn light" id="homeBtn">Главная</button>
+  </div>
+
+  <!-- TODAY -->
+  <main id="todayView" class="screen active">
+    <section id="homeScreen" class="screen active">
+      <div class="hero">
+        <div class="hero-title">Что делаем сегодня?</div>
+        <div class="hero-text">Самый быстрый путь: взять вчерашний план, отметить результат по каждой задаче и собрать новый план.</div>
+        <div id="draftNotice"></div>
+        <div class="home-grid">
+          <button class="home-action primary" id="continueBtn">
+            <strong>Продолжить отчёт</strong>
+            <span>Открыть незавершённый текущий день</span>
+          </button>
+          <button class="home-action" id="useLastBtn">
+            <strong>Из последнего плана</strong>
+            <span>Взять план из последнего сохранённого дня</span>
+          </button>
+          <button class="home-action" id="importBtn">
+            <strong>Вставить из Telegram</strong>
+            <span>Скопировать вчерашний отчёт и разобрать его</span>
+          </button>
+          <button class="home-action" id="blankBtn">
+            <strong>Пустой день</strong>
+            <span>Начать без прошлого отчёта</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-head">
+          <h2>Текущий статус</h2>
+          <span class="small muted" id="currentStatusText"></span>
+        </div>
+        <div class="kpi" id="currentKpis"></div>
+      </div>
+    </section>
+
+    <section id="importScreen" class="screen">
+      <div class="card">
+        <h2>Вставить вчерашний отчёт</h2>
+        <p class="muted small">Вставь текст целиком. Приложение попробует найти именно блок «План» и использовать его для сегодняшнего факта.</p>
+        <div class="field">
+          <textarea id="importText" placeholder="Вставьте сюда сообщение из Telegram..."></textarea>
+        </div>
+        <div id="importMsg"></div>
+        <div class="actions">
+          <button class="btn primary" id="parseBtn">Разобрать сообщение</button>
+          <button class="btn light" id="manualImportBtn">Вставить только список задач</button>
+          <button class="btn ghost" data-go-home>Отмена</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="manualImportScreen" class="screen">
+      <div class="card">
+        <h2>Ручной импорт плана</h2>
+        <p class="muted small">Одна задача — одна строка. Можно вставлять строки с дефисами, точками и нумерацией.</p>
+        <div class="field"><textarea id="manualPlanText" placeholder="- Инвентаризация&#10;- Тренировка&#10;- Проверить менеджеров"></textarea></div>
+        <div class="actions">
+          <button class="btn primary" id="manualParseBtn">Создать список</button>
+          <button class="btn light" data-screen="importScreen">Назад</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="confirmPlanScreen" class="screen">
+      <div class="card">
+        <h2>Я нашёл вчерашний план</h2>
+        <p class="muted small">Проверь список перед опросом. Здесь можно исправить, удалить или добавить задачу.</p>
+        <div id="detectedDateInfo" class="small muted" style="margin-bottom:10px"></div>
+        <div class="detect-list" id="detectedPlanList"></div>
+        <div class="spacer12"></div>
+        <button class="btn secondary full" id="addDetectedBtn">+ Добавить задачу</button>
+        <div class="spacer12"></div>
+        <div class="actions">
+          <button class="btn primary" id="confirmPlanBtn">Всё правильно — продолжить</button>
+          <button class="btn light" data-screen="importScreen">Назад</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="wizardScreen" class="screen">
+      <div class="card">
+        <div class="progress-wrap">
+          <div class="progress-top">
+            <span id="wizardCounter">Задача 1 из 1</span>
+            <span id="wizardDate"></span>
+          </div>
+          <div class="progress"><div id="wizardBar"></div></div>
+        </div>
+        <div class="small muted">Вчера было запланировано:</div>
+        <div class="task-question" id="wizardTask"></div>
+        <div id="wizardMainChoices" class="choice-grid">
+          <button class="choice good" data-status="done">✅ Сделал</button>
+          <button class="choice warn" data-status="progress">⏳ В процессе</button>
+          <button class="choice bad" data-status="notdone">❌ Не сделал</button>
+          <button class="choice gray" data-status="cancelled">🗑 Не актуально</button>
+        </div>
+        <div id="wizardFollowup" class="followup hidden"></div>
+        <div class="spacer12"></div>
+        <div class="actions">
+          <button class="btn light" id="wizardBackBtn">← Назад</button>
+          <button class="btn ghost" id="wizardExitBtn">Сохранить и выйти</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="extraFactScreen" class="screen">
+      <div class="card">
+        <h2>Было что-то ещё сегодня?</h2>
+        <p class="muted small">Добавь важные дела, которых не было во вчерашнем плане.</p>
+        <div class="inline-input">
+          <select id="extraStatus">
+            <option value="done">✅ Сделано</option>
+            <option value="progress">⏳ В процессе</option>
+            <option value="notdone">❌ Не сделано</option>
+          </select>
+          <input id="extraFactText" type="text" placeholder="Например: Заказал аксессуары">
+          <button class="btn secondary" id="addExtraFactBtn">Добавить</button>
+        </div>
+        <div class="spacer12"></div>
+        <div class="fact-list" id="extraFactList"></div>
+        <div class="spacer12"></div>
+        <div class="actions">
+          <button class="btn primary" id="extraNextBtn">Дальше</button>
+          <button class="btn light" id="extraBackBtn">← Назад к опросу</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="reviewFactScreen" class="screen">
+      <div class="card">
+        <h2>Факт сегодня</h2>
+        <p class="muted small">Проверь итог. Статус и текст можно изменить.</p>
+        <div class="fact-list" id="reviewFactList"></div>
+        <div class="spacer12"></div>
+        <button class="btn secondary full" id="reviewAddFactBtn">+ Добавить факт</button>
+        <div class="spacer12"></div>
+        <div class="actions">
+          <button class="btn primary" id="reviewFactNextBtn">Дальше</button>
+          <button class="btn light" data-screen="extraFactScreen">Назад</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="conclusionScreen" class="screen">
+      <div class="card">
+        <h2>Как прошёл день?</h2>
+        <div class="quick-phrases">
+          <button data-phrase="Хороший день, основные задачи выполнены.">Основное сделал</button>
+          <button data-phrase="День был тяжёлый.">Тяжёлый день</button>
+          <button data-phrase="Не успел сделать главное.">Не успел главное</button>
+          <button data-phrase="День прошёл продуктивно.">Продуктивно</button>
+        </div>
+        <div class="field">
+          <textarea id="conclusionText" placeholder="Короткий вывод дня..."></textarea>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="conclusionNextBtn">Дальше к плану</button>
+          <button class="btn light" data-screen="reviewFactScreen">Назад</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="planScreen" class="screen">
+      <div class="card">
+        <h2>План на завтра</h2>
+        <p class="muted small">Сверху уже стоят задачи, которые ты решил перенести.</p>
+        <div class="plan-list" id="newPlanList"></div>
+        <div class="spacer12"></div>
+        <div class="inline-input">
+          <input id="newPlanText" type="text" placeholder="Что ещё нужно сделать завтра?">
+          <select id="newPlanPriority" title="Приоритет">
+            <option value="main">🔴 Главное</option>
+            <option value="important">🟡 Важно</option>
+            <option value="normal" selected>⚪ Обычное</option>
+          </select>
+          <button class="btn secondary" id="addPlanBtn">Добавить</button>
+        </div>
+        <div id="duplicateWarning" class="warning hidden"></div>
+        <div class="spacer12"></div>
+        <div class="actions">
+          <button class="btn primary" id="planNextBtn">Собрать отчёт</button>
+          <button class="btn light" data-screen="conclusionScreen">Назад</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="finalScreen" class="screen">
+      <div class="card">
+        <div class="section-head">
+          <h2>Готовый отчёт</h2>
+          <span class="badge good" id="finalScore"></span>
+        </div>
+        <div id="finalWarning"></div>
+        <div class="preview" id="finalPreview"></div>
+        <div class="spacer12"></div>
+        <div class="actions">
+          <button class="btn primary" id="copyFinalBtn">Копировать</button>
+          <button class="btn secondary" id="shareFinalBtn">Поделиться</button>
+          <button class="btn good" id="finishDayBtn">Сохранить день</button>
+          <button class="btn light" id="editFinalBtn">Изменить</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- WEEK -->
+  <main id="weekView" class="screen">
+    <div class="card">
+      <div class="section-head"><h2>Цели недели</h2><span class="small muted">Автосохранение</span></div>
+      <div class="field"><label>Работа / бизнес</label><textarea id="weekWork"></textarea></div>
+      <div class="field"><label>Финансы</label><textarea id="weekFinance"></textarea></div>
+      <div class="field"><label>Спорт</label><textarea id="weekSport"></textarea></div>
+      <div class="field"><label>Личное / семья</label><textarea id="weekPersonal"></textarea></div>
+      <button class="btn primary" id="saveWeekBtn">Сохранить цели</button>
+    </div>
+  </main>
+
+  <!-- HISTORY -->
+  <main id="historyView" class="screen">
+    <div class="card">
+      <div class="section-head">
+        <h2>История</h2>
+        <button class="btn bad" id="clearHistoryBtn">Очистить</button>
+      </div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </main>
+
+  <!-- SETTINGS -->
+  <main id="settingsView" class="screen">
+    <div class="card">
+      <h2>Формат сообщения</h2>
+      <div class="field"><label>Факт</label><input id="sFactTitle" type="text"></div>
+      <div class="field"><label>План</label><input id="sPlanTitle" type="text"></div>
+      <div class="field"><label>Выводы</label><input id="sConclusionTitle" type="text"></div>
+      <div class="field"><label>План недели</label><input id="sWeekTitle" type="text"></div>
+      <div class="field"><label>Спортивная цель</label><input id="sSportTitle" type="text"></div>
+      <div class="field"><label>Финансовая цель</label><input id="sFinanceTitle" type="text"></div>
+      <div class="field"><label>Личная цель</label><input id="sPersonalTitle" type="text"></div>
+      <label><input id="sShowPersonal" type="checkbox"> Показывать личную цель</label>
+      <div class="spacer12"></div>
+      <label><input id="sShowEmpty" type="checkbox"> Показывать пустые разделы</label>
+      <div class="spacer12"></div>
+      <button class="btn primary" id="saveSettingsBtn">Сохранить настройки</button>
+    </div>
+
+    <div class="card">
+      <h2>Резервная копия</h2>
+      <p class="small muted">Данные хранятся в localStorage этого браузера. Резервная копия защищает от потери при очистке браузера.</p>
+      <div class="actions">
+        <button class="btn secondary" id="backupBtn">Скачать .json</button>
+        <label class="btn light" for="restoreInput" style="display:inline-flex;align-items:center;justify-content:center">Восстановить из .json</label>
+        <input id="restoreInput" class="file-input" type="file" accept=".json,application/json">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Данные</h2>
+      <button class="btn bad" id="resetAllBtn">Удалить все данные</button>
+    </div>
+  </main>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-btn active" data-view="todayView"><span>✓</span>Сегодня</button>
+    <button class="nav-btn" data-view="weekView"><span>▣</span>Неделя</button>
+    <button class="nav-btn" data-view="historyView"><span>☰</span>История</button>
+    <button class="nav-btn" data-view="settingsView"><span>⚙</span>Настройки</button>
+  </div>
+</nav>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <h3 id="modalTitle"></h3>
+    <div id="modalBody"></div>
+    <div class="spacer12"></div>
+    <div class="actions" id="modalActions"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+
+const STORAGE_KEY = 'plan_fact_app_data_v1';
+const VERSION = 1;
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+const defaults = {
+  version: VERSION,
+  currentReport: null,
+  reports: [],
+  weeklyGoals: { work:[], finance:[], sport:[], personal:[] },
+  settings: {
+    factTitle:'➡️ Факт',
+    planTitle:'📋 План на',
+    conclusionTitle:'Выводы:',
+    weekTitle:'📅 План на неделю:',
+    sportTitle:'🏃 Спортивная задача:',
+    financeTitle:'💰 Финансовая цель:',
+    personalTitle:'👤 Личная задача:',
+    showPersonal:true,
+    showEmpty:false
+  }
+};
+
+let db = loadDB();
+let importCandidate = { tasks:[], detectedPlanDate:'', importedGoals:null, raw:'' };
+let pendingStatus = null;
+
+function clone(x){ return JSON.parse(JSON.stringify(x)); }
+function localISO(d=new Date()){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function addDays(iso,n){
+  const [y,m,d]=iso.split('-').map(Number);
+  const x=new Date(y,m-1,d,12,0,0); x.setDate(x.getDate()+n);
+  return localISO(x);
+}
+function shortDate(iso){
+  if(!iso) return '';
+  const [y,m,d]=iso.split('-'); return `${d}.${m}`;
+}
+function longDate(iso){
+  if(!iso) return '';
+  const [y,m,d]=iso.split('-').map(Number);
+  return new Date(y,m-1,d,12).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'});
+}
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function esc(s=''){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function normalizeText(s=''){
+  return String(s).toLowerCase().replace(/^[\s\-–—•*✅⏳❌]+/,'').replace(/\s+/g,' ').trim();
+}
+function uniquePush(arr,item,key='text'){
+  const n=normalizeText(item[key] ?? item);
+  if(!n) return false;
+  if(arr.some(x=>normalizeText(x[key] ?? x)===n)) return false;
+  arr.push(item); return true;
+}
+function saveDB(){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(db));
+  updateHome();
+}
+function loadDB(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return clone(defaults);
+    const d=JSON.parse(raw);
+    return {
+      version:VERSION,
+      currentReport:d.currentReport||null,
+      reports:Array.isArray(d.reports)?d.reports:[],
+      weeklyGoals:{
+        work:Array.isArray(d.weeklyGoals?.work)?d.weeklyGoals.work:[],
+        finance:Array.isArray(d.weeklyGoals?.finance)?d.weeklyGoals.finance:[],
+        sport:Array.isArray(d.weeklyGoals?.sport)?d.weeklyGoals.sport:[],
+        personal:Array.isArray(d.weeklyGoals?.personal)?d.weeklyGoals.personal:[]
+      },
+      settings:{...defaults.settings,...(d.settings||{})}
+    };
+  }catch(e){ return clone(defaults); }
+}
+function blankReport(date=localISO()){
+  return {
+    id:uid(), date, source:'blank', importedPlanDate:'',
+    sourceTasks:[], answers:[], facts:[], plan:[], conclusion:'',
+    wizardIndex:0, wizardComplete:false, stage:'reviewFact', completed:false, updatedAt:Date.now()
+  };
+}
+function touch(){
+  if(db.currentReport) db.currentReport.updatedAt=Date.now();
+  saveDB();
+}
+function statusEmoji(s){ return s==='done'?'✅':s==='progress'?'⏳':s==='notdone'?'❌':''; }
+function statusLabel(s){ return s==='done'?'Сделано':s==='progress'?'В процессе':s==='notdone'?'Не сделано':'Не актуально'; }
+function priorityLabel(p){ return p==='main'?'🔴 Главное':p==='important'?'🟡 Важно':'⚪ Обычное'; }
+function showToast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(showToast._t); showToast._t=setTimeout(()=>t.classList.remove('show'),1800);
+}
+function modal(title,bodyHTML,actions){
+  $('#modalTitle').textContent=title;
+  $('#modalBody').innerHTML=bodyHTML;
+  const a=$('#modalActions'); a.innerHTML='';
+  actions.forEach(x=>{
+    const b=document.createElement('button');
+    b.className='btn '+(x.className||'light'); b.textContent=x.label;
+    b.onclick=()=>{ if(x.close!==false) closeModal(); x.onClick?.(); };
+    a.appendChild(b);
+  });
+  $('#modalBackdrop').classList.add('show');
+}
+function closeModal(){ $('#modalBackdrop').classList.remove('show'); }
+
+function activateView(id){
+  ['todayView','weekView','historyView','settingsView'].forEach(v=>$('#'+v).classList.toggle('active',v===id));
+  $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
+  if(id==='historyView') renderHistory();
+  if(id==='weekView') renderWeek();
+  if(id==='settingsView') renderSettings();
+}
+function showTodayScreen(id){
+  activateView('todayView');
+  $$('#todayView > .screen').forEach(s=>s.classList.toggle('active',s.id===id));
+  window.scrollTo({top:0,behavior:'instant'});
+}
+function goHome(){ showTodayScreen('homeScreen'); updateHome(); }
+
+function updateHome(){
+  $('#todayLabel').textContent = longDate(localISO());
+  const r=db.currentReport;
+  const hasDraft=!!(r && !r.completed);
+  $('#continueBtn').disabled=!hasDraft;
+  $('#continueBtn').style.opacity=hasDraft?'1':'.5';
+  $('#useLastBtn').disabled=!db.reports.length;
+  const notice=$('#draftNotice');
+  if(hasDraft){
+    notice.innerHTML=`<div class="success">Есть незавершённый отчёт за <b>${shortDate(r.date)}</b>. Данные сохранены автоматически.</div>`;
+  } else notice.innerHTML='';
+  const status=$('#currentStatusText'), kpis=$('#currentKpis');
+  if(!r){
+    status.textContent='Нет текущего отчёта';
+    kpis.innerHTML='<span class="badge">Начни новый день</span>';
+    return;
+  }
+  const facts=r.facts.filter(x=>x.status!=='cancelled');
+  const done=facts.filter(x=>x.status==='done').length;
+  status.textContent=`${shortDate(r.date)} · ${r.completed?'сохранён':'черновик'}`;
+  kpis.innerHTML=`
+    <span class="badge good">✅ ${done}</span>
+    <span class="badge warn">⏳ ${facts.filter(x=>x.status==='progress').length}</span>
+    <span class="badge bad">❌ ${facts.filter(x=>x.status==='notdone').length}</span>
+    <span class="badge">План: ${r.plan.length}</span>`;
+}
+
+function stripListPrefix(line){
+  return line
+    .replace(/^\s*(?:[-–—•*]+|\d+\s*[.)]|[✅⏳❌])\s*/,'')
+    .trim();
+}
+function isKnownHeader(line){
+  const s=line.toLowerCase().replace(/[➡️📋📅🏃💰👤:]/g,'').trim();
+  return /^(?:факт(?:\s|$)|план на неделю(?:\s|$)|план недели(?:\s|$)|выводы?(?:\s|$)|спорт(?:ивная)?(?:\s|$)|спортивная задача(?:\s|$)|финанс(?:ы|овая цель)(?:\s|$)|личн(?:ое|ая задача)(?:\s|$)|семья(?:\s|$))/i.test(s);
+}
+function isPlanHeader(line){
+  const s=line.toLowerCase().replace(/[📋📅]/g,'').trim();
+  if(/план\s+на\s+недел/.test(s)) return false;
+  return /^план(?:\s+на(?:\s+завтра|\s+\d{1,2}[.\-/]\d{1,2}(?:[.\-/]\d{2,4})?|\s+\d{1,2}\s+[а-яё]+))?\s*:?\s*$/i.test(s);
+}
+function parseDateFromPlanHeader(line){
+  const m=line.match(/(\d{1,2})[.\-/](\d{1,2})(?:[.\-/](\d{2,4}))?/);
+  if(m){
+    let y=m[3]?Number(m[3]):new Date().getFullYear();
+    if(y<100) y+=2000;
+    return `${y}-${String(m[2]).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
+  }
+  const months={января:1,февраля:2,марта:3,апреля:4,мая:5,июня:6,июля:7,августа:8,сентября:9,октября:10,ноября:11,декабря:12};
+  const mm=line.toLowerCase().match(/(\d{1,2})\s+(января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)/);
+  if(mm){
+    return `${new Date().getFullYear()}-${String(months[mm[2]]).padStart(2,'0')}-${String(mm[1]).padStart(2,'0')}`;
+  }
+  if(/завтра/i.test(line)) return localISO();
+  return '';
+}
+function collectSection(lines,startIndex){
+  const out=[];
+  for(let i=startIndex+1;i<lines.length;i++){
+    const raw=lines[i].trim();
+    if(!raw) continue;
+    if(isKnownHeader(raw) || isPlanHeader(raw)) break;
+    const item=stripListPrefix(raw);
+    if(item) out.push(item);
+  }
+  return out;
+}
+function findSectionByRegex(lines,regex){
+  for(let i=0;i<lines.length;i++){
+    if(regex.test(lines[i].toLowerCase())) return collectSection(lines,i);
+  }
+  return [];
+}
+function mergeGoalArrays(target,items){
+  items.forEach(text=>uniquePush(target,text));
+}
+function parseTelegram(text){
+  const lines=text.replace(/\r/g,'').split('\n').map(x=>x.trim());
+  let planIndex=-1, planDate='';
+  for(let i=0;i<lines.length;i++){
+    if(isPlanHeader(lines[i])){
+      planIndex=i; planDate=parseDateFromPlanHeader(lines[i]); break;
+    }
+  }
+  if(planIndex<0) return {ok:false,tasks:[],planDate:'',goals:null};
+  const tasks=[];
+  for(let i=planIndex+1;i<lines.length;i++){
+    const raw=lines[i];
+    if(!raw) continue;
+    if(isKnownHeader(raw) || (isPlanHeader(raw)&&i!==planIndex)) break;
+    const item=stripListPrefix(raw);
+    if(item) uniquePush(tasks,item);
+  }
+  const goals={
+    work:findSectionByRegex(lines,/план\s+на\s+недел|план\s+недел/),
+    sport:findSectionByRegex(lines,/спортивн|^спорт(?:\s|:|$)/),
+    finance:findSectionByRegex(lines,/финансов|^финансы(?:\s|:|$)/),
+    personal:findSectionByRegex(lines,/личн|^семья(?:\s|:|$)/)
+  };
+  return {ok:tasks.length>0,tasks,planDate,goals};
+}
+function parseManualList(text){
+  const arr=[];
+  text.replace(/\r/g,'').split('\n').forEach(line=>{
+    const v=stripListPrefix(line);
+    if(v) uniquePush(arr,v);
+  });
+  return arr;
+}
+
+function renderDetectedPlan(){
+  const el=$('#detectedPlanList'); el.innerHTML='';
+  importCandidate.tasks.forEach((t,i)=>{
+    const row=document.createElement('div'); row.className='edit-row';
+    row.innerHTML=`<input type="text" value="${esc(t)}" data-detected="${i}">
+      <button class="mini danger" data-detected-del="${i}">×</button>`;
+    el.appendChild(row);
+  });
+  $('#detectedDateInfo').textContent=importCandidate.detectedPlanDate
+    ? `Распознана дата плана: ${shortDate(importCandidate.detectedPlanDate)}`
+    : 'Дата плана не распознана — будет использована сегодняшняя дата.';
+}
+function startFromTasks(tasks, source='import', detectedPlanDate='', importedGoals=null){
+  const date = detectedPlanDate || localISO();
+  const report=blankReport(date);
+  report.source=source; report.importedPlanDate=detectedPlanDate;
+  report.sourceTasks=tasks.map(text=>({id:uid(),text}));
+  report.answers=[];
+  report.facts=[];
+  report.plan=[];
+  report.wizardIndex=0;
+  report.stage=tasks.length?'wizard':'reviewFact';
+  db.currentReport=report;
+  if(importedGoals){
+    mergeGoalArrays(db.weeklyGoals.work,importedGoals.work||[]);
+    mergeGoalArrays(db.weeklyGoals.finance,importedGoals.finance||[]);
+    mergeGoalArrays(db.weeklyGoals.sport,importedGoals.sport||[]);
+    mergeGoalArrays(db.weeklyGoals.personal,importedGoals.personal||[]);
+  }
+  saveDB();
+  tasks.length ? renderWizard() : renderReviewFact();
+}
+function useLastPlan(){
+  if(!db.reports.length) return;
+  const last=[...db.reports].sort((a,b)=>b.date.localeCompare(a.date))[0];
+  const tasks=(last.plan||[]).map(x=>x.text).filter(Boolean);
+  if(!tasks.length){ showToast('В последнем отчёте план пустой'); return; }
+  importCandidate={tasks,detectedPlanDate:addDays(last.date,1),importedGoals:null,raw:''};
+  renderDetectedPlan(); showTodayScreen('confirmPlanScreen');
+}
+
+function currentWizardTask(){
+  const r=db.currentReport;
+  return r?.sourceTasks?.[r.wizardIndex]||null;
+}
+function answerIndexByTaskId(id){
+  return db.currentReport.answers.findIndex(a=>a.taskId===id);
+}
+function renderWizard(){
+  const r=db.currentReport;
+  if(!r || !r.sourceTasks.length){ renderReviewFact(); return; }
+  if(r.wizardIndex>=r.sourceTasks.length){ r.wizardComplete=true; r.stage='extraFact'; touch(); renderExtraFacts(); return; }
+  r.stage='wizard';
+  const task=currentWizardTask();
+  const total=r.sourceTasks.length, idx=r.wizardIndex;
+  $('#wizardCounter').textContent=`Задача ${idx+1} из ${total}`;
+  $('#wizardDate').textContent=shortDate(r.date);
+  $('#wizardBar').style.width=`${Math.round((idx/total)*100)}%`;
+  $('#wizardTask').textContent=task.text;
+  $('#wizardFollowup').classList.add('hidden');
+  $('#wizardFollowup').innerHTML='';
+  $('#wizardMainChoices').classList.remove('hidden');
+  $('#wizardBackBtn').disabled=idx===0;
+  showTodayScreen('wizardScreen');
+  touch();
+}
+function applyAnswer(task,status,carry=false,carryText=null){
+  const r=db.currentReport;
+  const ai=answerIndexByTaskId(task.id);
+  const answer={taskId:task.id,text:task.text,status,carry,carryText:carryText||task.text};
+  if(ai>=0) r.answers[ai]=answer; else r.answers.push(answer);
+  r.facts=r.facts.filter(f=>f.sourceTaskId!==task.id);
+  if(status!=='cancelled'){
+    r.facts.push({id:uid(),sourceTaskId:task.id,text:task.text,status,extra:false});
+  }
+  r.plan=r.plan.filter(p=>p.sourceTaskId!==task.id);
+  if(carry){
+    uniquePush(r.plan,{id:uid(),sourceTaskId:task.id,text:carryText||task.text,priority:'normal'});
+  }
+  touch();
+}
+function askCarry(status){
+  const task=currentWizardTask();
+  $('#wizardMainChoices').classList.add('hidden');
+  const box=$('#wizardFollowup'); box.classList.remove('hidden');
+  if(status==='progress'){
+    box.innerHTML=`<h3>Перенести эту задачу в план на завтра?</h3>
+      <div class="choice-grid">
+        <button class="choice good" data-carry="yes">Да, перенести</button>
+        <button class="choice gray" data-carry="no">Нет</button>
+      </div>`;
+  } else if(status==='notdone'){
+    box.innerHTML=`<h3>Что делать с задачей?</h3>
+      <div class="choice-grid">
+        <button class="choice good" data-carry="yes">Перенести на завтра</button>
+        <button class="choice gray" data-carry="no">Не переносить</button>
+        <button class="choice" id="changeCarryBtn">Изменить и перенести</button>
+      </div>`;
+    setTimeout(()=>{
+      $('#changeCarryBtn').onclick=()=>{
+        box.innerHTML=`<h3>Как записать задачу на завтра?</h3>
+          <div class="inline-input">
+            <input id="carryEditText" type="text" value="${esc(task.text)}">
+            <button class="btn primary" id="carryEditSave">Сохранить</button>
+          </div>`;
+        $('#carryEditSave').onclick=()=>{
+          const v=$('#carryEditText').value.trim();
+          if(!v){ showToast('Введите текст задачи'); return; }
+          applyAnswer(task,'notdone',true,v); nextWizard();
+        };
+      };
+    },0);
+  }
+}
+function nextWizard(){
+  const r=db.currentReport; r.wizardIndex++; touch(); renderWizard();
+}
+function previousWizard(){
+  const r=db.currentReport;
+  if(r.wizardIndex<=0) return;
+  r.wizardIndex--;
+  const task=currentWizardTask();
+  const ai=answerIndexByTaskId(task.id);
+  if(ai>=0){
+    r.answers.splice(ai,1);
+    r.facts=r.facts.filter(f=>f.sourceTaskId!==task.id);
+    r.plan=r.plan.filter(p=>p.sourceTaskId!==task.id);
+  }
+  touch(); renderWizard();
+}
+
+function renderExtraFacts(){
+  const r=db.currentReport; r.stage='extraFact'; touch();
+  const extras=r.facts.filter(f=>f.extra);
+  const el=$('#extraFactList'); el.innerHTML='';
+  extras.forEach(f=>{
+    const row=document.createElement('div'); row.className='fact-row';
+    row.innerHTML=`<span class="badge ${f.status==='done'?'good':f.status==='progress'?'warn':'bad'}">${statusEmoji(f.status)} ${statusLabel(f.status)}</span>
+      <div>${esc(f.text)}</div><div class="row-actions"><button class="mini danger" data-extra-del="${f.id}">×</button></div>`;
+    el.appendChild(row);
+  });
+  showTodayScreen('extraFactScreen');
+}
+function addExtraFact(text,status){
+  const r=db.currentReport;
+  if(!text.trim()) return false;
+  r.facts.push({id:uid(),sourceTaskId:null,text:text.trim(),status,extra:true});
+  touch(); return true;
+}
+function renderReviewFact(){
+  const r=db.currentReport; r.stage='reviewFact'; touch();
+  const el=$('#reviewFactList'); el.innerHTML='';
+  const facts=r.facts.filter(f=>f.status!=='cancelled');
+  if(!facts.length) el.innerHTML='<div class="muted small">Факт пока пустой.</div>';
+  facts.forEach((f,i)=>{
+    const row=document.createElement('div'); row.className='fact-row';
+    row.innerHTML=`
+      <select data-fact-status="${f.id}">
+        <option value="done" ${f.status==='done'?'selected':''}>✅ Сделано</option>
+        <option value="progress" ${f.status==='progress'?'selected':''}>⏳ В процессе</option>
+        <option value="notdone" ${f.status==='notdone'?'selected':''}>❌ Не сделано</option>
+      </select>
+      <input type="text" value="${esc(f.text)}" data-fact-text="${f.id}">
+      <div class="row-actions">
+        <button class="mini" data-fact-up="${f.id}">↑</button>
+        <button class="mini" data-fact-down="${f.id}">↓</button>
+        <button class="mini danger" data-fact-del="${f.id}">×</button>
+      </div>`;
+    el.appendChild(row);
+  });
+  showTodayScreen('reviewFactScreen');
+}
+function moveById(arr,id,dir){
+  const i=arr.findIndex(x=>x.id===id); if(i<0) return;
+  const j=i+dir; if(j<0||j>=arr.length) return;
+  [arr[i],arr[j]]=[arr[j],arr[i]];
+}
+function renderConclusion(){
+  const r=db.currentReport; r.stage='conclusion'; touch();
+  $('#conclusionText').value=r.conclusion||'';
+  showTodayScreen('conclusionScreen');
+}
+function renderPlan(){
+  const r=db.currentReport; r.stage='plan'; touch();
+  const el=$('#newPlanList'); el.innerHTML='';
+  if(!r.plan.length) el.innerHTML='<div class="muted small">План пока пустой.</div>';
+  r.plan.forEach(p=>{
+    const row=document.createElement('div'); row.className='plan-row';
+    row.innerHTML=`<div>
+        <input type="text" value="${esc(p.text)}" data-plan-text="${p.id}">
+        <div class="small muted" style="margin-top:5px">${priorityLabel(p.priority)}</div>
+      </div>
+      <div class="row-actions">
+        <button class="mini" data-plan-up="${p.id}">↑</button>
+        <button class="mini" data-plan-down="${p.id}">↓</button>
+        <button class="mini danger" data-plan-del="${p.id}">×</button>
+      </div>`;
+    el.appendChild(row);
+  });
+  $('#duplicateWarning').classList.add('hidden');
+  showTodayScreen('planScreen');
+}
+function addPlanTask(text,priority='normal',force=false){
+  const r=db.currentReport; const clean=text.trim(); if(!clean) return false;
+  const dup=r.plan.some(p=>normalizeText(p.text)===normalizeText(clean));
+  if(dup && !force){
+    $('#duplicateWarning').innerHTML=`Такая задача уже есть в плане: <b>${esc(clean)}</b><div class="spacer8"></div>
+      <button class="btn light" id="forceAddPlan">Всё равно добавить</button>`;
+    $('#duplicateWarning').classList.remove('hidden');
+    $('#forceAddPlan').onclick=()=>{ addPlanTask(clean,priority,true); $('#newPlanText').value=''; renderPlan(); };
+    return false;
+  }
+  r.plan.push({id:uid(),sourceTaskId:null,text:clean,priority});
+  touch(); return true;
+}
+
+function linesOrEmpty(arr){ return Array.isArray(arr)?arr.filter(Boolean):[]; }
+function buildReportText(report=db.currentReport){
+  if(!report) return '';
+  const s=db.settings, g=db.weeklyGoals, out=[];
+  out.push(`${s.factTitle} ${shortDate(report.date)}`); out.push('');
+  const facts=report.facts.filter(f=>f.status!=='cancelled' && f.text.trim());
+  if(facts.length) facts.forEach(f=>out.push(`${statusEmoji(f.status)} ${f.text.trim()}`));
+  else if(s.showEmpty) out.push('—');
+
+  out.push(''); out.push(`${s.planTitle} ${shortDate(addDays(report.date,1))}`); out.push('');
+  if(report.plan.length) report.plan.forEach(p=>out.push(`- ${p.text.trim()}`));
+  else if(s.showEmpty) out.push('-');
+
+  if(report.conclusion.trim() || s.showEmpty){
+    out.push(''); out.push(s.conclusionTitle); out.push(report.conclusion.trim()||'—');
+  }
+  if(g.work.length || s.showEmpty){
+    out.push(''); out.push(s.weekTitle);
+    (g.work.length?g.work:['—']).forEach(x=>out.push(g.work.length?`- ${x}`:x));
+  }
+  if(g.sport.length || s.showEmpty){
+    out.push(''); out.push(s.sportTitle);
+    (g.sport.length?g.sport:['—']).forEach(x=>out.push(g.sport.length?`- ${x}`:x));
+  }
+  if(g.finance.length || s.showEmpty){
+    out.push(''); out.push(s.financeTitle);
+    (g.finance.length?g.finance:['—']).forEach(x=>out.push(g.finance.length?`- ${x}`:x));
+  }
+  if(s.showPersonal && (g.personal.length || s.showEmpty)){
+    out.push(''); out.push(s.personalTitle);
+    (g.personal.length?g.personal:['—']).forEach(x=>out.push(g.personal.length?`- ${x}`:x));
+  }
+  return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+function renderFinal(){
+  const r=db.currentReport; r.stage='final'; touch();
+  const facts=r.facts.filter(f=>f.status!=='cancelled');
+  const done=facts.filter(f=>f.status==='done').length;
+  $('#finalScore').textContent=facts.length?`Выполнено ${done} из ${facts.length}`:'Факт пустой';
+  const warns=[];
+  if(!facts.length) warns.push('Факт пока пустой.');
+  if(!r.plan.length) warns.push('План на завтра пока пустой.');
+  $('#finalWarning').innerHTML=warns.length?`<div class="warning">${warns.join(' ')}</div>`:'';
+  $('#finalPreview').textContent=buildReportText();
+  showTodayScreen('finalScreen');
+}
+async function copyText(text){
+  try{
+    await navigator.clipboard.writeText(text); showToast('Скопировано');
+  }catch(e){
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');ta.remove();showToast('Скопировано');
+  }
+}
+async function shareText(text){
+  if(navigator.share){
+    try{ await navigator.share({text}); return; }catch(e){ if(e.name==='AbortError') return; }
+  }
+  await copyText(text);
+  showToast('Отчёт скопирован. Вставьте его в Telegram.');
+}
+function finishDay(){
+  const r=db.currentReport; if(!r) return;
+  const saved=clone(r); saved.completed=true; saved.message=buildReportText(r); saved.savedAt=Date.now();
+  const i=db.reports.findIndex(x=>x.date===saved.date);
+  if(i>=0) db.reports[i]=saved; else db.reports.push(saved);
+  db.currentReport=null; saveDB(); renderHistory(); goHome(); showToast('День сохранён');
+}
+
+function renderWeek(){
+  $('#weekWork').value=db.weeklyGoals.work.join('\n');
+  $('#weekFinance').value=db.weeklyGoals.finance.join('\n');
+  $('#weekSport').value=db.weeklyGoals.sport.join('\n');
+  $('#weekPersonal').value=db.weeklyGoals.personal.join('\n');
+}
+function textToGoalArray(v){
+  const out=[]; v.split(/\n+/).map(x=>stripListPrefix(x)).filter(Boolean).forEach(x=>uniquePush(out,x)); return out;
+}
+function saveWeek(){
+  db.weeklyGoals.work=textToGoalArray($('#weekWork').value);
+  db.weeklyGoals.finance=textToGoalArray($('#weekFinance').value);
+  db.weeklyGoals.sport=textToGoalArray($('#weekSport').value);
+  db.weeklyGoals.personal=textToGoalArray($('#weekPersonal').value);
+  saveDB(); showToast('Цели сохранены');
+}
+
+function renderHistory(){
+  const el=$('#historyList'); el.innerHTML='';
+  const list=[...db.reports].sort((a,b)=>b.date.localeCompare(a.date));
+  if(!list.length){ el.innerHTML='<div class="muted small">История пока пустая.</div>'; return; }
+  list.forEach(r=>{
+    const facts=(r.facts||[]).filter(f=>f.status!=='cancelled');
+    const done=facts.filter(f=>f.status==='done').length;
+    const row=document.createElement('div');row.className='history-row';
+    row.innerHTML=`<div class="history-head">
+      <div><div class="history-date">${longDate(r.date)}</div><div class="history-meta">Выполнено ${done} из ${facts.length} · План: ${(r.plan||[]).length}</div></div>
+      <span class="badge ${done===facts.length&&facts.length?'good':''}">${facts.length?Math.round(done/facts.length*100):0}%</span>
+    </div>
+    <div class="spacer8"></div>
+    <div class="actions">
+      <button class="btn light" data-history-open="${r.id}">Открыть</button>
+      <button class="btn secondary" data-history-copy="${r.id}">Копировать</button>
+      <button class="btn bad" data-history-del="${r.id}">Удалить</button>
+    </div>`;
+    el.appendChild(row);
+  });
+}
+function renderHistoryReport(id){
+  const r=db.reports.find(x=>x.id===id); if(!r) return;
+  modal(longDate(r.date),`<div class="preview">${esc(r.message||buildReportText(r)).replace(/\n/g,'<br>')}</div>`,[
+    {label:'Копировать',className:'secondary',onClick:()=>copyText(r.message||buildReportText(r))},
+    {label:'Изменить',className:'light',onClick:()=>{ db.currentReport=clone(r); db.currentReport.completed=false; saveDB(); renderReviewFact(); }},
+    {label:'Закрыть',className:'light'}
+  ]);
+}
+
+function renderSettings(){
+  $('#sFactTitle').value=db.settings.factTitle;
+  $('#sPlanTitle').value=db.settings.planTitle;
+  $('#sConclusionTitle').value=db.settings.conclusionTitle;
+  $('#sWeekTitle').value=db.settings.weekTitle;
+  $('#sSportTitle').value=db.settings.sportTitle;
+  $('#sFinanceTitle').value=db.settings.financeTitle;
+  $('#sPersonalTitle').value=db.settings.personalTitle;
+  $('#sShowPersonal').checked=db.settings.showPersonal;
+  $('#sShowEmpty').checked=db.settings.showEmpty;
+}
+function saveSettings(){
+  db.settings={
+    factTitle:$('#sFactTitle').value.trim()||defaults.settings.factTitle,
+    planTitle:$('#sPlanTitle').value.trim()||defaults.settings.planTitle,
+    conclusionTitle:$('#sConclusionTitle').value.trim()||defaults.settings.conclusionTitle,
+    weekTitle:$('#sWeekTitle').value.trim()||defaults.settings.weekTitle,
+    sportTitle:$('#sSportTitle').value.trim()||defaults.settings.sportTitle,
+    financeTitle:$('#sFinanceTitle').value.trim()||defaults.settings.financeTitle,
+    personalTitle:$('#sPersonalTitle').value.trim()||defaults.settings.personalTitle,
+    showPersonal:$('#sShowPersonal').checked,
+    showEmpty:$('#sShowEmpty').checked
+  };
+  saveDB(); showToast('Настройки сохранены');
+}
+function downloadBackup(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url;a.download=`plan_fact_backup_${localISO()}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+}
+async function restoreBackup(file){
+  try{
+    const text=await file.text(); const incoming=JSON.parse(text);
+    if(!incoming || typeof incoming!=='object' || !Array.isArray(incoming.reports)) throw new Error('bad');
+    modal('Восстановить данные?','Текущие данные будут заменены данными из резервной копии.',[
+      {label:'Восстановить',className:'primary',onClick:()=>{
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(incoming)); db=loadDB(); renderAll(); goHome(); showToast('Данные восстановлены');
+      }},
+      {label:'Отмена',className:'light'}
+    ]);
+  }catch(e){ showToast('Не удалось прочитать резервную копию'); }
+}
+function renderAll(){ updateHome(); renderWeek(); renderHistory(); renderSettings(); }
+
+function resumeCurrent(){
+  const r=db.currentReport; if(!r){goHome();return;}
+  switch(r.stage){
+    case 'wizard': renderWizard(); break;
+    case 'extraFact': renderExtraFacts(); break;
+    case 'reviewFact': renderReviewFact(); break;
+    case 'conclusion': renderConclusion(); break;
+    case 'plan': renderPlan(); break;
+    case 'final': renderFinal(); break;
+    default: renderReviewFact();
+  }
+}
+
+/* EVENTS */
+$$('.nav-btn').forEach(b=>b.onclick=()=>activateView(b.dataset.view));
+$('#homeBtn').onclick=goHome;
+$$('[data-go-home]').forEach(b=>b.onclick=goHome);
+document.addEventListener('click',e=>{
+  const s=e.target.closest('[data-screen]'); if(s) showTodayScreen(s.dataset.screen);
+});
+
+$('#continueBtn').onclick=resumeCurrent;
+$('#useLastBtn').onclick=useLastPlan;
+$('#importBtn').onclick=()=>{ $('#importMsg').innerHTML=''; showTodayScreen('importScreen'); };
+$('#blankBtn').onclick=()=>{
+  db.currentReport=blankReport(localISO()); saveDB(); renderReviewFact();
+};
+$('#manualImportBtn').onclick=()=>showTodayScreen('manualImportScreen');
+
+$('#parseBtn').onclick=()=>{
+  const raw=$('#importText').value.trim();
+  if(!raw){ $('#importMsg').innerHTML='<div class="warning">Вставьте сообщение из Telegram.</div>'; return; }
+  const parsed=parseTelegram(raw);
+  if(!parsed.ok){
+    $('#importMsg').innerHTML='<div class="error">Я не смог найти в сообщении блок плана. Можно вставить другой текст или выбрать задачи вручную.</div>';
+    return;
+  }
+  importCandidate={tasks:parsed.tasks,detectedPlanDate:parsed.planDate,importedGoals:parsed.goals,raw};
+  renderDetectedPlan(); showTodayScreen('confirmPlanScreen');
+};
+$('#manualParseBtn').onclick=()=>{
+  const tasks=parseManualList($('#manualPlanText').value);
+  if(!tasks.length){ showToast('Добавьте хотя бы одну задачу'); return; }
+  importCandidate={tasks,detectedPlanDate:localISO(),importedGoals:null,raw:''};
+  renderDetectedPlan(); showTodayScreen('confirmPlanScreen');
+};
+$('#addDetectedBtn').onclick=()=>{ importCandidate.tasks.push(''); renderDetectedPlan(); setTimeout(()=>$$('[data-detected]').at(-1)?.focus(),0); };
+$('#confirmPlanBtn').onclick=()=>{
+  importCandidate.tasks=importCandidate.tasks.map(x=>x.trim()).filter(Boolean);
+  if(!importCandidate.tasks.length){ showToast('План пустой'); return; }
+  const uniq=[]; importCandidate.tasks.forEach(x=>uniquePush(uniq,x)); importCandidate.tasks=uniq;
+  startFromTasks(importCandidate.tasks,'import',importCandidate.detectedPlanDate||localISO(),importCandidate.importedGoals);
+};
+
+document.addEventListener('input',e=>{
+  if(e.target.dataset.detected!==undefined){
+    importCandidate.tasks[+e.target.dataset.detected]=e.target.value;
+  }
+  const fid=e.target.dataset.factText;
+  if(fid && db.currentReport){
+    const f=db.currentReport.facts.find(x=>x.id===fid); if(f){ f.text=e.target.value; touch(); }
+  }
+  const pid=e.target.dataset.planText;
+  if(pid && db.currentReport){
+    const p=db.currentReport.plan.find(x=>x.id===pid); if(p){ p.text=e.target.value; touch(); }
+  }
+});
+document.addEventListener('change',e=>{
+  const fid=e.target.dataset.factStatus;
+  if(fid && db.currentReport){
+    const f=db.currentReport.facts.find(x=>x.id===fid); if(f){ f.status=e.target.value; touch(); }
+  }
+});
+document.addEventListener('click',e=>{
+  const dd=e.target.dataset.detectedDel;
+  if(dd!==undefined){ importCandidate.tasks.splice(+dd,1); renderDetectedPlan(); }
+  const ed=e.target.dataset.extraDel;
+  if(ed){ db.currentReport.facts=db.currentReport.facts.filter(x=>x.id!==ed); touch(); renderExtraFacts(); }
+  const fd=e.target.dataset.factDel;
+  if(fd){ db.currentReport.facts=db.currentReport.facts.filter(x=>x.id!==fd); touch(); renderReviewFact(); }
+  const fu=e.target.dataset.factUp; if(fu){ moveById(db.currentReport.facts,fu,-1); touch(); renderReviewFact(); }
+  const fdo=e.target.dataset.factDown; if(fdo){ moveById(db.currentReport.facts,fdo,1); touch(); renderReviewFact(); }
+  const pd=e.target.dataset.planDel;
+  if(pd){ db.currentReport.plan=db.currentReport.plan.filter(x=>x.id!==pd); touch(); renderPlan(); }
+  const pu=e.target.dataset.planUp; if(pu){ moveById(db.currentReport.plan,pu,-1); touch(); renderPlan(); }
+  const pdo=e.target.dataset.planDown; if(pdo){ moveById(db.currentReport.plan,pdo,1); touch(); renderPlan(); }
+
+  const ho=e.target.dataset.historyOpen; if(ho) renderHistoryReport(ho);
+  const hc=e.target.dataset.historyCopy; if(hc){ const r=db.reports.find(x=>x.id===hc); if(r) copyText(r.message||buildReportText(r)); }
+  const hd=e.target.dataset.historyDel; if(hd){
+    modal('Удалить отчёт?','Этот день будет удалён из истории.',[
+      {label:'Удалить',className:'bad',onClick:()=>{db.reports=db.reports.filter(x=>x.id!==hd);saveDB();renderHistory();}},
+      {label:'Отмена',className:'light'}
+    ]);
+  }
+});
+$$('[data-status]').forEach(b=>b.onclick=()=>{
+  const status=b.dataset.status, task=currentWizardTask(); if(!task) return;
+  pendingStatus=status;
+  if(status==='done'){ applyAnswer(task,'done',false); nextWizard(); }
+  else if(status==='cancelled'){ applyAnswer(task,'cancelled',false); nextWizard(); }
+  else askCarry(status);
+});
+document.addEventListener('click',e=>{
+  const c=e.target.dataset.carry;
+  if(c){
+    const task=currentWizardTask(); if(!task||!pendingStatus) return;
+    applyAnswer(task,pendingStatus,c==='yes'); nextWizard();
+  }
+});
+$('#wizardBackBtn').onclick=previousWizard;
+$('#wizardExitBtn').onclick=()=>{ touch(); goHome(); showToast('Черновик сохранён'); };
+
+$('#addExtraFactBtn').onclick=()=>{
+  const text=$('#extraFactText').value, status=$('#extraStatus').value;
+  if(addExtraFact(text,status)){ $('#extraFactText').value=''; renderExtraFacts(); }
+  else showToast('Введите текст');
+};
+$('#extraNextBtn').onclick=renderReviewFact;
+$('#extraBackBtn').onclick=()=>{
+  const r=db.currentReport;
+  if(r.sourceTasks.length){ r.wizardIndex=Math.max(0,r.sourceTasks.length-1); renderWizard(); }
+  else renderReviewFact();
+};
+$('#reviewAddFactBtn').onclick=()=>{
+  modal('Добавить факт',`<div class="field"><select id="modalFactStatus"><option value="done">✅ Сделано</option><option value="progress">⏳ В процессе</option><option value="notdone">❌ Не сделано</option></select></div><div class="field"><input id="modalFactText" type="text" placeholder="Что произошло?"></div>`,[
+    {label:'Добавить',className:'primary',close:false,onClick:()=>{
+      const v=$('#modalFactText').value.trim(); if(!v){showToast('Введите текст');return;}
+      addExtraFact(v,$('#modalFactStatus').value); closeModal(); renderReviewFact();
+    }},
+    {label:'Отмена',className:'light'}
+  ]);
+};
+$('#reviewFactNextBtn').onclick=renderConclusion;
+$$('[data-phrase]').forEach(b=>b.onclick=()=>{ $('#conclusionText').value=b.dataset.phrase; db.currentReport.conclusion=b.dataset.phrase; touch(); });
+$('#conclusionText').oninput=e=>{ db.currentReport.conclusion=e.target.value; touch(); };
+$('#conclusionNextBtn').onclick=()=>{ db.currentReport.conclusion=$('#conclusionText').value.trim(); touch(); renderPlan(); };
+
+$('#addPlanBtn').onclick=()=>{
+  const v=$('#newPlanText').value, p=$('#newPlanPriority').value;
+  if(!v.trim()){showToast('Введите задачу');return;}
+  if(addPlanTask(v,p)){ $('#newPlanText').value=''; renderPlan(); }
+};
+$('#newPlanText').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('#addPlanBtn').click(); }});
+$('#planNextBtn').onclick=renderFinal;
+$('#copyFinalBtn').onclick=()=>copyText(buildReportText());
+$('#shareFinalBtn').onclick=()=>shareText(buildReportText());
+$('#finishDayBtn').onclick=finishDay;
+$('#editFinalBtn').onclick=renderReviewFact;
+
+$('#saveWeekBtn').onclick=saveWeek;
+$('#saveSettingsBtn').onclick=saveSettings;
+$('#backupBtn').onclick=downloadBackup;
+$('#restoreInput').onchange=e=>{ if(e.target.files[0]) restoreBackup(e.target.files[0]); e.target.value=''; };
+$('#clearHistoryBtn').onclick=()=>{
+  if(!db.reports.length){showToast('История уже пустая');return;}
+  modal('Очистить всю историю?','Все сохранённые отчёты будут удалены.',[
+    {label:'Очистить',className:'bad',onClick:()=>{db.reports=[];saveDB();renderHistory();}},
+    {label:'Отмена',className:'light'}
+  ]);
+};
+$('#resetAllBtn').onclick=()=>{
+  modal('Удалить все данные?','Будут удалены история, текущий отчёт, цели недели и настройки.',[
+    {label:'Удалить всё',className:'bad',onClick:()=>{localStorage.removeItem(STORAGE_KEY);db=clone(defaults);renderAll();goHome();showToast('Все данные удалены');}},
+    {label:'Отмена',className:'light'}
+  ]);
+};
+$('#modalBackdrop').onclick=e=>{ if(e.target===$('#modalBackdrop')) closeModal(); };
+
+renderAll();
+goHome();
+})();
+</script>
+</body>
+</html>
