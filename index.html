@@ -381,8 +381,8 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
         <div class="preview" id="finalPreview"></div>
         <div class="spacer12"></div>
         <div class="actions">
-          <button class="btn primary" id="copyFinalBtn">Копировать</button>
-          <button class="btn secondary" id="shareFinalBtn">Поделиться</button>
+          <button class="btn primary" id="shareFinalBtn">Поделиться отчётом</button>
+          <button class="btn secondary" id="copyFinalBtn">Копировать текст</button>
           <button class="btn good" id="finishDayBtn">Сохранить день</button>
           <button class="btn light" id="editFinalBtn">Изменить</button>
         </div>
@@ -924,6 +924,24 @@ function addPlanTask(text,priority='normal',force=false){
 }
 
 function linesOrEmpty(arr){ return Array.isArray(arr)?arr.filter(Boolean):[]; }
+
+function sanitizePlainText(text){
+  return String(text ?? '')
+    .normalize('NFC')
+    .replace(/\r\n?/g,'\n')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,'')
+    .replace(/[\u200B\u200C\u200D\u2060\uFEFF]/g,'')
+    .replace(/\u00A0/g,' ')
+    .replace(/\u202F/g,' ')
+    .replace(/[ \t]+\n/g,'\n')
+    .replace(/\n{3,}/g,'\n\n')
+    .trim();
+}
+
+function normalizeTelegramText(text){
+  return sanitizePlainText(text);
+}
+
 function buildReportText(report=db.currentReport){
   if(!report) return '';
   const s=db.settings, g=db.weeklyGoals, out=[];
@@ -957,6 +975,14 @@ function buildReportText(report=db.currentReport){
   }
   return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
 }
+
+function getTelegramPlainText(report=db.currentReport){
+  const cleanText=normalizeTelegramText(buildReportText(report));
+  // Диагностика: строка должна быть обычным plain text без HTML/невидимых control-символов.
+  console.debug('[PlanFact plain text]', JSON.stringify(cleanText));
+  return cleanText;
+}
+
 function renderFinal(){
   const r=db.currentReport; r.stage='final'; touch();
   const facts=r.facts.filter(f=>f.status!=='cancelled');
@@ -966,27 +992,76 @@ function renderFinal(){
   if(!facts.length) warns.push('Факт пока пустой.');
   if(!r.plan.length) warns.push('План на завтра пока пустой.');
   $('#finalWarning').innerHTML=warns.length?`<div class="warning">${warns.join(' ')}</div>`:'';
-  $('#finalPreview').textContent=buildReportText();
+  $('#finalPreview').textContent=getTelegramPlainText(r);
+
+  // Web Share — основной мобильный путь. На неподдерживаемых устройствах
+  // кнопка остаётся рабочей и переключается на безопасное plain-text копирование.
+  const shareBtn=$('#shareFinalBtn');
+  if(shareBtn){
+    shareBtn.textContent=navigator.share?'Поделиться отчётом':'Копировать текст';
+  }
   showTodayScreen('finalScreen');
 }
-async function copyText(text){
+
+async function copyText(text, notify=true){
+  const cleanText=normalizeTelegramText(text);
   try{
-    await navigator.clipboard.writeText(text); showToast('Скопировано');
+    if(navigator.clipboard && typeof navigator.clipboard.writeText==='function'){
+      await navigator.clipboard.writeText(cleanText);
+    }else{
+      throw new Error('Clipboard API unavailable');
+    }
+    if(notify) showToast('Скопирован обычный текст');
+    return true;
   }catch(e){
-    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();
-    document.execCommand('copy');ta.remove();showToast('Скопировано');
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=cleanText;
+      ta.setAttribute('readonly','');
+      ta.style.position='fixed';
+      ta.style.left='-9999px';
+      ta.style.top='0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok=document.execCommand('copy');
+      ta.remove();
+      if(!ok) throw new Error('execCommand copy failed');
+      if(notify) showToast('Скопирован обычный текст');
+      return true;
+    }catch(copyError){
+      if(notify) showToast('Не удалось скопировать текст');
+      return false;
+    }
   }
 }
+
 async function shareText(text){
+  const cleanText=normalizeTelegramText(text);
+
   if(navigator.share){
-    try{ await navigator.share({text}); return; }catch(e){ if(e.name==='AbortError') return; }
+    try{
+      await navigator.share({text:cleanText});
+      return true;
+    }catch(e){
+      if(e && e.name==='AbortError') return false;
+      const copied=await copyText(cleanText,false);
+      showToast(copied
+        ? 'Не удалось открыть «Поделиться». Текст скопирован.'
+        : 'Не удалось открыть «Поделиться».');
+      return false;
+    }
   }
-  await copyText(text);
-  showToast('Отчёт скопирован. Вставьте его в Telegram.');
+
+  const copied=await copyText(cleanText,false);
+  showToast(copied
+    ? 'Поделиться недоступно. Обычный текст скопирован.'
+    : 'На этом устройстве «Поделиться» недоступно.');
+  return copied;
 }
 function finishDay(){
   const r=db.currentReport; if(!r) return;
-  const saved=clone(r); saved.completed=true; saved.message=buildReportText(r); saved.savedAt=Date.now();
+  const saved=clone(r); saved.completed=true; saved.message=getTelegramPlainText(r); saved.savedAt=Date.now();
   const i=db.reports.findIndex(x=>x.date===saved.date);
   if(i>=0) db.reports[i]=saved; else db.reports.push(saved);
   db.currentReport=null; saveDB(); renderHistory(); goHome(); showToast('День сохранён');
@@ -1228,8 +1303,8 @@ $('#addPlanBtn').onclick=()=>{
 };
 $('#newPlanText').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('#addPlanBtn').click(); }});
 $('#planNextBtn').onclick=renderFinal;
-$('#copyFinalBtn').onclick=()=>copyText(buildReportText());
-$('#shareFinalBtn').onclick=()=>shareText(buildReportText());
+$('#copyFinalBtn').onclick=()=>copyText(getTelegramPlainText());
+$('#shareFinalBtn').onclick=()=>shareText(getTelegramPlainText());
 $('#finishDayBtn').onclick=finishDay;
 $('#editFinalBtn').onclick=renderReviewFact;
 
